@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - geometry - cube</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body>
+
+		<script type="module">
+
+			import * as THREE from '../build/three.module.js';
+
+			import { OrbitControls } from './jsm/controls/OrbitControls.js';
+			import { BVHLoader } from './jsm/loaders/BVHLoader.js';
+
+			import { MTLLoader } from './jsm/loaders/MTLLoader.js';
+			import { OBJLoader } from './jsm/loaders/OBJLoader.js';
+
+
+			let camera, scene, renderer , controls;
+			let Earth , Venus , Sun , Mercury , Mars , Moon;
+			const objects = []
+
+			init();
+		//	animate();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set (0 , 40 , 0);
+
+				scene = new THREE.Scene();
+
+
+
+	
+
+
+				const reflectionCube = new THREE.CubeTextureLoader()
+				.setPath( 'textures/' )
+				.load(['right.png', 'left.png', 'top.png', 'bottom.png', 'front.png', 'back.png' ] );
+				scene.background = reflectionCube;
+
+
+				const SolarSystem = new THREE.Object3D()
+				scene.add(SolarSystem)
+				objects.push(SolarSystem)
+
+				const EarthOrbit = new THREE.Object3D()
+				EarthOrbit.position.x = 10
+				SolarSystem.add(EarthOrbit)
+				objects.push(EarthOrbit)
+
+
+				//Creation terre
+
+				var mapMinecraft = undefined;
+		var mtlLoader = new MTLLoader
+		mtlLoader.load("Test1.mtl", function (materials){
+			materials.preload();
+			var objLoader = new OBJLoader();
+			objLoader.setMaterials(materials);	
+			objLoader.load("Test1.obj", function(object){
+				mapMinecraft = object;
+				scene.add(mapMinecraft)
+			})
+		})
+
+
+				const Suntexture = new THREE.TextureLoader().load( 'textures/sun.jpg' );
+				const SunGeometry = new THREE.SphereGeometry( 200, 32, 16 );
+				const SunMaterial = new THREE.MeshBasicMaterial( { map: Suntexture } );
+				Sun = new THREE.Mesh( SunGeometry, SunMaterial );
+				Sun.scale.set(5,5,5)
+				Sun.position.set(0,0,0)	
+
+				const light = new THREE.PointLight( 0xffffff, 1, 100 );
+				light.position.set( 0, 3000, 2000); //default; light shining from top
+				light.castShadow = true; // default false
+				scene.add( light );
+
+				light.shadow.mapSize.width = 5120; // default
+				light.shadow.mapSize.height = 5120; // default
+				light.shadow.camera.near = 0.1; // default
+				light.shadow.camera.far = 5000; // default
+
+				scene.add( Sun );
+				SolarSystem.add(Sun)
+				objects.push(Sun)
+				Sun.castShadow = true; //default is false
+				Sun.receiveShadow = true; //default
+
+
+				// Mercury 
+
+				const Mercurytexture = new THREE.TextureLoader().load( 'textures/mercury.jpg' );
+				const MercuryGeometry = new THREE.SphereGeometry( 200, 32, 16 );
+				const MercuryMaterial = new THREE.MeshBasicMaterial( { map: Mercurytexture } );
+				Mercury = new THREE.Mesh( MercuryGeometry, MercuryMaterial );
+				Mercury.position.set(2000,0,0)
+				Mercury.castShadow = true; //default is false
+				Mercury.receiveShadow = true; //default	
+
+				scene.add( Mercury );
+				SolarSystem.add(Mercury)
+				objects.push(Mercury)
+
+
+				const helper = new THREE.CameraHelper( light.shadow.camera );
+				scene.add( helper );
+
+
+
+
+				//Venus
+
+				const Venustexture = new THREE.TextureLoader().load( 'textures/venus.jpg' );
+				const VenusGeometry = new THREE.SphereGeometry( 200, 32, 16 );
+				const VenusMaterial = new THREE.MeshBasicMaterial( { map: Venustexture } );
+				Venus = new THREE.Mesh( VenusGeometry, VenusMaterial );
+				Venus.castShadow = true; //default is false
+				Venus.receiveShadow = true; //default
+				scene.add( Venus );
+				Venus.position.set(4000,0,0)		
+				
+				SolarSystem.add(Venus)
+				objects.push(Venus)
+
+				
+				//Creation Earth
+
+
+				const Earthtexture = new THREE.TextureLoader().load( 'textures/Earth.jpg' );
+				const EarthGeometry = new THREE.SphereGeometry( 200, 32, 16 );
+				const EarthMaterial = new THREE.MeshBasicMaterial( { map: Earthtexture } );
+				Earth = new THREE.Mesh( EarthGeometry, EarthMaterial );
+				scene.add( Earth );
+				Earth.position.set(0,0,6000)
+
+				EarthOrbit.add(Earth)
+				objects.push(Earth)
+
+
+				const moonOrbit = new THREE.Object3D();
+ 				moonOrbit.position.x = 2;
+  				EarthOrbit.add(moonOrbit);
+				
+
+
+				const Moontexture = new THREE.TextureLoader().load( 'textures/moon.jpg' );
+				const MoonGeometry = new THREE.SphereGeometry( 200, 32, 16 );
+				const MoonMaterial = new THREE.MeshBasicMaterial( { map: Moontexture } );
+				Moon = new THREE.Mesh( MoonGeometry, MoonMaterial );
+				Moon.scale.set(.5, .5, .5);
+				Moon.position.set(0,0,7000)
+				scene.add( Moon );
+
+				moonOrbit.add(Moon)
+				objects.push(Moon)
+
+
+				const Marstexture = new THREE.TextureLoader().load( 'textures/mars.jpg' );
+				const MarsGeometry = new THREE.SphereGeometry( 200, 32, 16 );
+				const MarsMaterial = new THREE.MeshBasicMaterial( { map: Marstexture } );
+				Mars = new THREE.Mesh( MarsGeometry, MarsMaterial );
+				scene.add( Mars );
+				Mars.position.set(0,0,8000)
+
+				SolarSystem.add(Mars)
+				objects.push(Mars)
+	
+
+
+
+
+
+
+				//copy paste the next 4 lines always
+				renderer = new THREE.WebGLRenderer( );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				renderer.shadowMap.enabled = true;
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.minDistance = 500;
+				controls.maxDistance = 10000;
+
+
+	
+
+
+			}
+
+			function resizeRendererToDisplaySize(renderer) {
+				const canvas = renderer.domElement;
+				const width = canvas.clientWidth;
+				const height = canvas.clientHeight;
+				const needResize = canvas.width !== width || canvas.height !== height;
+			if (needResize) {
+				renderer.setSize(width, height, false);
+				}
+					return needResize;
+				}
+
+
+
+
+			function render(time) {
+   				 time *= 0.001;
+
+   			 if (resizeRendererToDisplaySize(renderer)) {
+				const canvas = renderer.domElement;
+				camera.aspect = canvas.clientWidth / canvas.clientHeight;
+				camera.updateProjectionMatrix();
+				}
+
+				objects.forEach((obj) => {
+				obj.rotation.y = time;
+				});
+
+				renderer.render(scene, camera);
+
+				requestAnimationFrame(render);
+			}
+
+			requestAnimationFrame(render);
+
+
+		</script>
+
+	</body>
+</html>
